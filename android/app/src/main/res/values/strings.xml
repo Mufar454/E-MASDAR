@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MASDAR</string>
+    <string name="title_activity_main">MASDAR</string>
+    <string name="package_name">com.masdar.hizib</string>
+    <string name="custom_url_scheme">com.masdar.hizib</string>
+</resources>

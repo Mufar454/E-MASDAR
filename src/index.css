@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;500;600;700&family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    @apply bg-white text-gray-900 transition-colors duration-300;
+  }
+
+  .dark body, body.dark {
+    @apply bg-gray-950 text-gray-100;
+  }
+}
+
+@layer components {
+  .arabic-text {
+    font-family: 'Scheherazade New', 'Amiri', serif;
+    direction: rtl;
+    unicode-bidi: bidi-override;
+    line-height: 2.2;
+    letter-spacing: 0.01em;
+  }
+
+  .verse-card {
+    @apply rounded-2xl border transition-all duration-200;
+  }
+
+  .btn-gold {
+    @apply bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl px-5 py-2.5 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl px-4 py-2 transition-all duration-200;
+  }
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { @apply bg-emerald-300 rounded-full; }
+.dark ::-webkit-scrollbar-thumb { @apply bg-emerald-700; }
+
+/* Prevent FOUC on dark mode */
+html.dark { color-scheme: dark; }
