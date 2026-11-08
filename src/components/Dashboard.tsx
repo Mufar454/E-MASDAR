@@ -242,7 +242,7 @@ export default function Dashboard({ onNavigate, darkMode, onToggleDark }: Props)
       </main>
 
       <footer className={`text-center py-5 px-4 pb-24 text-xs border-t ${darkMode ? 'border-gray-800 text-gray-500' : 'border-gray-200 text-gray-400'}`}>
-        <p>Dirancang oleh: Muhammad Farid .2026 (v2.1)| MF Digitalisasi 0896 0101 1991</p>
+        <p>Dirancang oleh: Muhammad Farid .2026 (v3)| MF Digitalisasi 0896 0101 1991</p>
       </footer>
     </div>
   );
