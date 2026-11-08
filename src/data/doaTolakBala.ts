@@ -2,7 +2,7 @@ import type { BookContent } from '../types';
 
 export const doatolakbalatahun: BookContent = {
   id: 'doa-tolak-bala-tahunan',
-  title: 'Shalawat Menolak Bencana Tahunan',
+  title: 'Shalawat Menolak Bencana ',
   titleAr: 'الصَّلَاةُ لِدَفْعِ الْبَلَاءِ الْعَظِيْمِ',
   subtitle: 'Shalawat untuk Menolak Bencana Besar',
   sections: [

@@ -1,5 +1,9 @@
-import { BookOpen, Scroll, Sparkles, HeartHandshake, Flame, BookCheck, Info, Moon, Sun } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { BookOpen, Scroll, ScrollText, HeartHandshake, Flame, BookCheck, Info, Moon, Sun, LayoutGrid, Circle } from 'lucide-react';
 import type { PageId } from '@/types';
+
+const LOGO_PATH = '/assets/images/LOGO_MASDAR.png';
+const VIEW_MODE_KEY = 'masdar_dashboard_view_mode';
 
 interface Props {
   onNavigate: (page: PageId) => void;
@@ -30,7 +34,7 @@ const menuItems = [
   },
   {
     id: 'maulid-qashidah' as PageId,
-    icon: Sparkles,
+    icon: ScrollText,
     title: 'Maulid & Qashidah',
     titleAr: 'الْمَوَالِدُ وَالْقَصَائِدُ',
     desc: 'Simtuddurar, Ad-Dhiyaul Lami\', Asy-Syarobut Thohur, Burdah, Fii Hubbi Sayyidina',
@@ -82,8 +86,20 @@ const menuItems = [
 ];
 
 export default function Dashboard({ onNavigate, darkMode, onToggleDark }: Props) {
-  return (
-    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}>
+  const [viewMode, setViewMode] = useState<'grid' | 'radial'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(VIEW_MODE_KEY);
+      return saved === 'radial' ? 'radial' : 'grid';
+    }
+    return 'grid';
+  });
+
+  useEffect(() => {
+    localStorage.setItem(VIEW_MODE_KEY, viewMode);
+  }, [viewMode]);
+
+   return (
+    <div className={`min-h-screen flex flex-col transition-colors duration-300 relative ${darkMode ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'}`}>
       
       {/* Header Banner Royal Navy & Gold */}
       <header className="relative overflow-hidden border-b-2 border-amber-400/40 shadow-xl">
@@ -136,62 +152,136 @@ export default function Dashboard({ onNavigate, darkMode, onToggleDark }: Props)
           </p>
         </div>
 
-        {/* Dark Mode Toggle */}
-        <button
-          onClick={onToggleDark}
-          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/10 hover:bg-white/20 text-amber-300 border border-amber-400/30 transition-all"
-          aria-label="Toggle dark mode"
-        >
-          {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
+        {/* View Mode & Dark Mode Toggles */}
+        <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+          <button
+            onClick={() => setViewMode(viewMode === 'grid' ? 'radial' : 'grid')}
+            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-amber-300 border border-amber-400/30 transition-all"
+            aria-label="Toggle view mode"
+            title={viewMode === 'grid' ? 'Mode Radial' : 'Mode Grid'}
+          >
+            {viewMode === 'grid' ? <LayoutGrid size={18} /> : <Circle size={18} />}
+          </button>
+          <button
+            onClick={onToggleDark}
+            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-amber-300 border border-amber-400/30 transition-all"
+            aria-label="Toggle dark mode"
+          >
+            {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+        </div>
       </header>
 
       {/* Grid Kategori Utama */}
-      <main className="flex-1 px-4 py-6 max-w-2xl mx-auto w-full">
+      <main className="relative z-10 flex-1 px-4 py-6 max-w-2xl mx-auto w-full">
         <p className={`text-center text-sm mb-5 font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
           Pilih kategori bacaan untuk memulai
         </p>
-        <div className="grid grid-cols-2 gap-3 sm:gap-4">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.id}
-                onClick={() => onNavigate(item.id)}
-                className={`
-                  group relative overflow-hidden rounded-2xl border ${item.accent}
-                  shadow-lg ${item.glow} hover:shadow-xl
-                  transition-all duration-300 active:scale-[0.97]
-                  text-left p-0
-                  ${item.colSpan ? 'col-span-2' : ''}
-                `}
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-90`} />
-                <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                <div className="relative z-10 flex flex-col items-center text-center p-4 gap-2">
-                  <div className="shrink-0 w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
-                    <Icon size={22} className="text-amber-300" />
+        {viewMode === 'grid' ? (
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => onNavigate(item.id)}
+                  className={`
+                    group relative overflow-hidden rounded-2xl border ${item.accent}
+                    shadow-lg ${item.glow} hover:shadow-xl
+                    transition-all duration-300 active:scale-[0.97]
+                    text-left p-0
+                    ${item.colSpan ? 'col-span-2' : ''}
+                  `}
+                >
+                  <div className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-90`} />
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                  <div className="relative z-10 flex flex-col items-center text-center p-4 gap-2">
+                    <div className="shrink-0 w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
+                      <Icon size={22} className="text-amber-300" />
+                    </div>
+                    <div className="w-full">
+                      <p className="font-arabic text-amber-200 text-sm leading-relaxed" dir="rtl">
+                        {item.titleAr}
+                      </p>
+                      <h3 className="text-white font-bold text-[13px] leading-tight mt-1 line-clamp-2">
+                        {item.title}
+                      </h3>
+                      <p className="text-white/60 text-[11px] mt-0.5 line-clamp-2 leading-snug">{item.desc}</p>
+                    </div>
                   </div>
-                  <div className="w-full">
-                    <p className="font-arabic text-amber-200 text-sm leading-relaxed" dir="rtl">
-                      {item.titleAr}
-                    </p>
-                    <h3 className="text-white font-bold text-[13px] leading-tight mt-1 line-clamp-2">
-                      {item.title}
-                    </h3>
-                    <p className="text-white/60 text-[11px] mt-0.5 line-clamp-2 leading-snug">{item.desc}</p>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="relative w-full max-w-sm mx-auto aspect-square">
+            {/* Watermark centered inside radial menu */}
+            <img
+              src={LOGO_PATH}
+              alt=""
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-10 w-[500px] h-[500px] object-contain"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+
+            {/* Center logo */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+              <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-amber-600/90 to-amber-900/90 border-2 border-amber-400/60 flex items-center justify-center shadow-[0_0_30px_rgba(251,191,36,0.35)]">
+                <img
+                  src={LOGO_PATH}
+                  alt="MASDAR"
+                  className="w-16 h-16 object-contain"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Decorative rings */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-80 h-80 rounded-full border border-amber-400/10" />
+              <div className="absolute w-[28rem] h-[28rem] rounded-full border border-amber-400/5" />
+            </div>
+
+            {menuItems.map((item, i) => {
+              const angle = (i / menuItems.length) * 2 * Math.PI - Math.PI / 2;
+              const radius = 165;
+              const x = Math.cos(angle) * radius;
+              const y = Math.sin(angle) * radius;
+              const Icon = item.icon;
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => onNavigate(item.id)}
+                  className="absolute flex flex-col items-center gap-1 group"
+                  style={{
+                    left: '50%',
+                    top: '50%',
+                    transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
+                  }}
+                  title={item.title}
+                >
+                  <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${item.color} border ${item.accent} flex items-center justify-center shadow-lg group-hover:scale-110 group-active:scale-95 transition-transform`}>
+                    <Icon size={28} className="text-amber-300" />
                   </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
+                  <p className={`font-arabic font-bold text-center leading-relaxed max-w-[90px] line-clamp-2 drop-shadow-sm text-sm ${darkMode ? 'text-amber-300' : 'text-slate-950'}`} dir="rtl">
+                    {item.titleAr}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </main>
 
       {/* Footer */}
       <footer className={`text-center py-5 px-4 text-xs border-t ${darkMode ? 'border-gray-800 text-gray-500' : 'border-gray-200 text-gray-400'}`}>
-        <p>© 2026 Darul Khairat - MASDAR (v2.0.0) | Muhammad Farid.</p>
+        <p>Dirancang oleh: Muhammad Farid .2026 (v2.1)| MF Digitalisasi 0896 0101 1991</p>
       </footer>
     </div>
   );

@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, Scroll, Sparkles, HeartHandshake, Flame, BookCheck, ChevronRight } from 'lucide-react';
+import { ArrowLeft, BookOpen, Scroll, ScrollText, HeartHandshake, Flame, BookCheck, ChevronRight } from 'lucide-react';
 import type { PageId } from '@/types';
 
 interface SubMenuItem {
@@ -52,7 +52,7 @@ const SUBMENU_DATA: Record<string, CategoryConfig> = {
   'maulid-qashidah': {
     title: 'Maulid & Qashidah',
     titleAr: 'الْمَوَالِدُ وَالْقَصَائِدُ',
-    icon: Sparkles,
+    icon: ScrollText,
     gradient: 'from-amber-800 via-amber-900 to-slate-950',
     accent: 'border-amber-500',
     items: [
