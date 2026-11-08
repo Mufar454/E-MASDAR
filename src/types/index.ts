@@ -12,6 +12,11 @@ export type PageId =
   | 'tahlil-jenazah'
   | 'khutbah-acara'
   | 'about'
+  // Fitur Baru
+  | 'adzan-sholat'
+  | 'quran'
+  | 'kiblat'
+  | 'kalender-hijriyah'
   // ID Bacaan Detail (Reader)
   | 'yasin'
   | 'waqiah'
@@ -33,7 +38,7 @@ export type PageId =
   | 'dhiyaul-lami'
   | 'burdah'
   | 'hubbi'
-  | 'syarobutthohur' // Sudah ditambahkan di sini
+  | 'syarobutthohur'
   | 'doa'
   | 'doa-khatam'
   | 'doa-kiai-suadi'

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
 
 import { usePreferences } from '@/hooks/usePreferences';
@@ -10,7 +10,7 @@ import { mulkData } from '@/data/alMulk';
 import { sajdahData } from '@/data/asSajdah';
 import { kahfData } from '@/data/alkahfi';
 import { arRahmanData } from './data/arRahmanData';
-import { arRoDuData } from '@/data/ar-ro\'du';
+import { arRoDuData } from "@/data/ar-ro'du";
 import { ratibHaddad } from '@/data/ratibHaddad';
 import { ratibAlAthasData } from '@/data/ratibatthas';
 import { kumpulanZikirData as ratibSyaikhonaData } from '@/data/ratibsyaikhonakholil';
@@ -51,17 +51,21 @@ import Dashboard from '@/components/Dashboard';
 import SubMenuPage from '@/components/SubMenuPage';
 import ReaderView from '@/components/ReaderView';
 import AboutPage from '@/components/AboutPage';
+import QuranPage from '@/components/QuranPage';
+import QiblaPage from '@/components/QiblaPage';
+import HijriCalendarPage from '@/components/HijriCalendarPage';
+import AdzanPage from '@/components/AdzanPage';
+import FloatingNavbar from '@/components/FloatingNavbar';
 
 import type { PageId } from '@/types';
 
-// Daftar ID Kategori Sub-Menu
 const SUBMENU_IDS: PageId[] = [
   'surah-pilihan',
   'ratib-hizib',
   'maulid-qashidah',
   'kumpulan-doa',
   'tahlil-jenazah',
-  'khutbah-acara'
+  'khutbah-acara',
 ];
 
 export default function App() {
@@ -69,43 +73,29 @@ export default function App() {
   const [page, setPage] = useState<PageId>('home');
   const [lastSubMenu, setLastSubMenu] = useState<PageId | null>(null);
 
-  // Navigasi yang menyimpan memori sub-menu terakhir
   const handleNavigate = (newPage: PageId) => {
-    if (SUBMENU_IDS.includes(newPage)) {
-      setLastSubMenu(newPage);
-    }
+    if (SUBMENU_IDS.includes(newPage)) setLastSubMenu(newPage);
     setPage(newPage);
   };
 
-  // Logika tombol back (kembali ke sub-menu atau ke home)
-  const handleBack = () => {
-    if ((page as string) === 'about') {
-      setPage('home');
-    } else if (SUBMENU_IDS.includes(page)) {
-      setPage('home');
-    } else if (lastSubMenu) {
-      setPage(lastSubMenu);
-    } else {
-      setPage('home');
-    }
-  };
+  const handleBack = useCallback(() => {
+    if ((page as string) === 'about') setPage('home');
+    else if (SUBMENU_IDS.includes(page)) setPage('home');
+    else if (['adzan-sholat', 'quran', 'kiblat', 'kalender-hijriyah'].includes(page)) setPage('home');
+    else if (lastSubMenu) setPage(lastSubMenu);
+    else setPage('home');
+  }, [page, lastSubMenu]);
 
-  // Logika Native Back Button (Capacitor)
   useEffect(() => {
     const backButtonListener = CapacitorApp.addListener('backButton', () => {
-      if (page !== 'home') {
-        handleBack();
-      } else {
-        CapacitorApp.exitApp();
-      }
+      if (page !== 'home') handleBack();
+      else CapacitorApp.exitApp();
     });
-
     return () => {
       backButtonListener.then((listener) => listener.remove());
     };
-  }, [page, lastSubMenu]);
+  }, [page, handleBack]);
 
-  // Props disesuaikan dengan ReaderView.tsx
   const readerProps = {
     fontSize: prefs.fontSize,
     darkMode: prefs.darkMode,
@@ -115,191 +105,97 @@ export default function App() {
     onToggleDark: toggleDarkMode,
   };
 
-  // 1. TAMPILKAN HALAMAN SUB-MENU (KATEGORI)
-  if (SUBMENU_IDS.includes(page)) {
+  if (page === 'quran') {
     return (
-      <SubMenuPage
-        categoryId={page}
-        onNavigate={handleNavigate}
-        darkMode={prefs.darkMode}
-      />
+      <>
+        <QuranPage darkMode={prefs.darkMode} onBack={handleBack} />
+        <FloatingNavbar active={page} onNavigate={handleNavigate} darkMode={prefs.darkMode} />
+      </>
+    );
+  }
+  if (page === 'kiblat') {
+    return (
+      <>
+        <QiblaPage darkMode={prefs.darkMode} onBack={handleBack} />
+        <FloatingNavbar active={page} onNavigate={handleNavigate} darkMode={prefs.darkMode} />
+      </>
+    );
+  }
+  if (page === 'kalender-hijriyah') {
+    return (
+      <>
+        <HijriCalendarPage darkMode={prefs.darkMode} onBack={handleBack} />
+        <FloatingNavbar active={page} onNavigate={handleNavigate} darkMode={prefs.darkMode} />
+      </>
+    );
+  }
+  if (page === 'adzan-sholat') {
+    return (
+      <>
+        <AdzanPage darkMode={prefs.darkMode} onBack={handleBack} />
+        <FloatingNavbar active={page} onNavigate={handleNavigate} darkMode={prefs.darkMode} />
+      </>
     );
   }
 
-  // 2. TAMPILKAN BACAAN (READER VIEW)
+  if (SUBMENU_IDS.includes(page)) {
+    return (
+      <>
+        <SubMenuPage categoryId={page} onNavigate={handleNavigate} darkMode={prefs.darkMode} />
+        <FloatingNavbar active={page} onNavigate={handleNavigate} darkMode={prefs.darkMode} />
+      </>
+    );
+  }
+
   if ((page as string) === 'yasin' || (page as string) === 'doa') {
     return <ReaderView {...readerProps} book={yasinData} pageId={page} />;
   }
+  if ((page as string) === 'waqiah') return <ReaderView {...readerProps} book={waqiahData} pageId={page} />;
+  if ((page as string) === 'mulk' || (page as string) === 'al-mulk' || (page as string) === 'alMulk') return <ReaderView {...readerProps} book={mulkData} pageId={page} />;
+  if ((page as string) === 'sajdah' || (page as string) === 'as-sajdah' || (page as string) === 'asSajdah') return <ReaderView {...readerProps} book={sajdahData} pageId={page} />;
+  if ((page as string) === 'kahf' || (page as string) === 'al-kahf' || (page as string) === 'alkahfi') return <ReaderView {...readerProps} book={kahfData} pageId={page} />;
+  if ((page as string) === 'surah-ar-rahman' || (page as string) === 'ar-rahman') return <ReaderView {...readerProps} book={arRahmanData} pageId={page} />;
+  if ((page as string) === 'rad' || (page as string) === "ar-ro'du") return <ReaderView {...readerProps} book={arRoDuData} pageId={page} />;
+  if ((page as string) === 'ratib' || (page as string) === 'ratib-haddad') return <ReaderView {...readerProps} book={ratibHaddad} pageId={page} />;
+  if ((page as string) === 'ratib-athas') return <ReaderView {...readerProps} book={ratibAlAthasData} pageId={page} />;
+  if ((page as string) === 'ratib-syaikhona-kholil') return <ReaderView {...readerProps} book={ratibSyaikhonaData} pageId={page} />;
+  if ((page as string) === 'hizib-sakron') return <ReaderView {...readerProps} book={hizibSakronData} pageId={page} />;
+  if ((page as string) === 'hizib-bahr') return <ReaderView {...readerProps} book={hizibBahrData} pageId={page} />;
+  if ((page as string) === 'hizib-nawawi' || (page as string) === 'hizib') return <ReaderView {...readerProps} book={hizibNawawiData} pageId={page} />;
+  if ((page as string) === 'simtuddurar' || (page as string) === 'simtudduror' || (page as string) === 'maulid-simtuddurar') return <ReaderView {...readerProps} book={simtudduror} pageId="simtuddurar" />;
+  if ((page as string) === 'maulid' || (page as string) === 'dhiyaul-lami') return <ReaderView {...readerProps} book={dhiyaulLami} pageId={page} />;
+  if ((page as string) === 'burdah') return <ReaderView {...readerProps} book={burdahData} pageId="burdah" />;
+  if ((page as string) === 'hubbi') return <ReaderView {...readerProps} book={fiiHubbiData} pageId="hubbi" />;
+  if ((page as string) === 'syarobutthohur') return <ReaderView {...readerProps} book={syarobutthohurData} pageId="syarobutthohur" />;
+  if ((page as string) === 'tawassul' || (page as string) === 'qashidah-tawassul') return <ReaderView {...readerProps} book={tawassulData} pageId="tawassul" />;
+  if ((page as string) === 'doa-khatam' || (page as string) === 'doa-khotmil-quran') return <ReaderView {...readerProps} book={doakhotmilquran} pageId={page} />;
+  if ((page as string) === 'doa-para-nabi' || (page as string) === 'doa-nabi') return <ReaderView {...readerProps} book={doaParaNabiData} pageId={page} />;
+  if ((page as string) === 'doa-kiai-suadi') return <ReaderView {...readerProps} book={doaKiaiSuadiData} pageId={page} />;
+  if ((page as string) === 'doa-tahajud' || (page as string) === 'doa-tahajjud') return <ReaderView {...readerProps} book={doatahajjud} pageId={page} />;
+  if ((page as string) === 'doa-dhuha') return <ReaderView {...readerProps} book={doadhuha} pageId={page} />;
+  if (page === 'doa-syaban') return <ReaderView {...readerProps} book={doasyaban} pageId={page} />;
+  if (page === 'doa-tarawih') return <ReaderView {...readerProps} book={doatarawih} pageId={page} />;
+  if (page === 'doa-witir') return <ReaderView {...readerProps} book={doawitir} pageId={page} />;
+  if (page === 'doa-akhir-awal-tahun') return <ReaderView {...readerProps} book={doaakhirtahunawaltahun} pageId={page} />;
+  if ((page as string) === 'doa-setelah-belajar') return <ReaderView {...readerProps} book={doaSetelahBelajarData} pageId={page} />;
+  if ((page as string) === 'akad' || (page as string) === 'doa-akad' || (page as string) === 'khutbah-nikah') return <ReaderView {...readerProps} book={doaAkadNikahData} pageId={page} />;
+  if (page === 'doa-tolak-bala-tahunan') return <ReaderView {...readerProps} book={doatolakbalatahun} pageId={page} />;
+  if ((page as string) === 'doa-kesehatan' || (page as string) === 'kumpulan-doa-kesehatan') return <ReaderView {...readerProps} book={doaKesehatanData} pageId={page} />;
+  if (page === 'khutbah-nikah-1') return <ReaderView {...readerProps} book={khutbahNikah1Data} pageId={page} />;
+  if (page === 'khutbah-nikah-2') return <ReaderView {...readerProps} book={khutbahNikah2Data} pageId={page} />;
+  if (page === 'khutbah-nikah-3') return <ReaderView {...readerProps} book={khutbahNikah3Data} pageId={page} />;
+  if ((page as string) === 'doa-nikah-syaikhona-kholil') return <ReaderView {...readerProps} book={doaNikahSyaikhonaKholilData} pageId={page} />;
+  if (page === 'shighot-nikah') return <ReaderView {...readerProps} book={shighotNikahData} pageId={page} />;
+  if ((page as string) === 'hamil' || (page as string) === 'doa-hamil') return <ReaderView {...readerProps} book={doaHamilData} pageId={page} />;
+  if ((page as string) === 'tahlil') return <ReaderView {...readerProps} book={tahlilData} pageId="tahlil" />;
+  if ((page as string) === 'talqin') return <ReaderView {...readerProps} book={talqinData} pageId="talqin" />;
+  if ((page as string) === 'doa-jenazah-anak') return <ReaderView {...readerProps} book={doaJenazahAnak} pageId={page} />;
+  if ((page as string) === 'about') return <AboutPage darkMode={prefs.darkMode} onBack={handleBack} />;
 
-  if ((page as string) === 'waqiah') {
-    return <ReaderView {...readerProps} book={waqiahData} pageId={page} />;
-  }
-
-  if ((page as string) === 'mulk' || (page as string) === 'al-mulk' || (page as string) === 'alMulk') {
-    return <ReaderView {...readerProps} book={mulkData} pageId={page} />;
-  }
-
-  if ((page as string) === 'sajdah' || (page as string) === 'as-sajdah' || (page as string) === 'asSajdah') {
-    return <ReaderView {...readerProps} book={sajdahData} pageId={page} />;
-  }
-
-  if ((page as string) === 'kahf' || (page as string) === 'al-kahf' || (page as string) === 'alkahfi') {
-    return <ReaderView {...readerProps} book={kahfData} pageId={page} />;
-  }
-
-  if ((page as string) === 'surah-ar-rahman' || (page as string) === 'ar-rahman') {
-  return <ReaderView {...readerProps} book={arRahmanData} pageId={page} />;
-}
-
-if ((page as string) === 'rad' || (page as string) === 'ar-ro\'du') {
-  return <ReaderView {...readerProps} book={arRoDuData} pageId={page} />;
-}
-  if ((page as string) === 'ratib' || (page as string) === 'ratib-haddad') {
-    return <ReaderView {...readerProps} book={ratibHaddad} pageId={page} />;
-  }
-
-  if ((page as string) === 'ratib-athas') {
-    return <ReaderView {...readerProps} book={ratibAlAthasData} pageId={page} />;
-  }
-
-  if ((page as string) === 'ratib-syaikhona-kholil') {
-    return <ReaderView {...readerProps} book={ratibSyaikhonaData} pageId={page} />;
-  }
-
-  if ((page as string) === 'hizib-sakron') {
-    return <ReaderView {...readerProps} book={hizibSakronData} pageId={page} />;
-  }
-
-  if ((page as string) === 'hizib-bahr') {
-    return <ReaderView {...readerProps} book={hizibBahrData} pageId={page} />;
-  }
-
-  if ((page as string) === 'hizib-nawawi' || (page as string) === 'hizib') {
-    return <ReaderView {...readerProps} book={hizibNawawiData} pageId={page} />;
-  }
-
-  // Khusus Maulid Simtuddurar
-  if ((page as string) === 'simtuddurar' || (page as string) === 'simtudduror' || (page as string) === 'maulid-simtuddurar') {
-    return <ReaderView {...readerProps} book={simtudduror} pageId="simtuddurar" />;
-  }
-
-  // Khusus Maulid Dhiyaul Lami'
-  if ((page as string) === 'maulid' || (page as string) === 'dhiyaul-lami') {
-    return <ReaderView {...readerProps} book={dhiyaulLami} pageId={page} />;
-  }
-
-  if ((page as string) === 'burdah') {
-    return <ReaderView {...readerProps} book={burdahData} pageId="burdah" />;
-  }
-
-  if ((page as string) === 'hubbi') {
-    return <ReaderView {...readerProps} book={fiiHubbiData} pageId="hubbi" />;
-  }
-
-  if ((page as string) === 'syarobutthohur') {
-    return <ReaderView {...readerProps} book={syarobutthohurData} pageId="syarobutthohur" />;
-  }
-
-  // Menangani Qashidah Tawassul MASDAR
-  if ((page as string) === 'tawassul' || (page as string) === 'qashidah-tawassul') {
-    return <ReaderView {...readerProps} book={tawassulData} pageId="tawassul" />;
-  }
-
-  if ((page as string) === 'doa-khatam' || (page as string) === 'doa-khotmil-quran') {
-    return <ReaderView {...readerProps} book={doakhotmilquran} pageId={page} />;
-  }
-  if ((page as string) === 'doa-para-nabi' || (page as string) === 'doa-nabi') {
-    return <ReaderView {...readerProps} book={doaParaNabiData} pageId={page} />;
-  }
-  if ((page as string) === 'doa-kiai-suadi') {
-    return <ReaderView {...readerProps} book={doaKiaiSuadiData} pageId={page} />;
-  }
-
-  if ((page as string) === 'doa-tahajud' || (page as string) === 'doa-tahajjud') {
-    return <ReaderView {...readerProps} book={doatahajjud} pageId={page} />;
-  }
-
-  if ((page as string) === 'doa-dhuha') {
-    return <ReaderView {...readerProps} book={doadhuha} pageId={page} />;
-  }
-
-  if (page === 'doa-syaban') {
-    return <ReaderView {...readerProps} book={doasyaban} pageId={page} />;
-  }
-
-  if (page === 'doa-tarawih') {
-    return <ReaderView {...readerProps} book={doatarawih} pageId={page} />;
-  }
-
-  if (page === 'doa-witir') {
-    return <ReaderView {...readerProps} book={doawitir} pageId={page} />;
-  }
-
-  if (page === 'doa-akhir-awal-tahun') {
-    return <ReaderView {...readerProps} book={doaakhirtahunawaltahun} pageId={page} />;
-  }
-
-  if ((page as string) === 'doa-setelah-belajar') {
-    return <ReaderView {...readerProps} book={doaSetelahBelajarData} pageId={page} />;
-  }
-
-  if ((page as string) === 'akad' || (page as string) === 'doa-akad' || (page as string) === 'khutbah-nikah') {
-    return <ReaderView {...readerProps} book={doaAkadNikahData} pageId={page} />;
-  }
-
-  if (page === 'doa-tolak-bala-tahunan') {
-    return <ReaderView {...readerProps} book={doatolakbalatahun} pageId={page} />;
-  }
-
-  if ((page as string) === 'doa-kesehatan' || (page as string) === 'kumpulan-doa-kesehatan') {
-  return <ReaderView {...readerProps} book={doaKesehatanData} pageId={page} />;
-}
-  if (page === 'khutbah-nikah-1') {
-    return <ReaderView {...readerProps} book={khutbahNikah1Data} pageId={page} />;
-  }
-
-  if (page === 'khutbah-nikah-2') {
-    return <ReaderView {...readerProps} book={khutbahNikah2Data} pageId={page} />;
-  }
-
-  if (page === 'khutbah-nikah-3') {
-    return <ReaderView {...readerProps} book={khutbahNikah3Data} pageId={page} />;
-  }
-
-  if ((page as string) === 'doa-nikah-syaikhona-kholil') {
-    return <ReaderView {...readerProps} book={doaNikahSyaikhonaKholilData} pageId={page} />;
-  }
-
-  if (page === 'shighot-nikah') {
-    return <ReaderView {...readerProps} book={shighotNikahData} pageId={page} />;
-  }
-
-  if ((page as string) === 'hamil' || (page as string) === 'doa-hamil') {
-    return <ReaderView {...readerProps} book={doaHamilData} pageId={page} />;
-  }
-
-  if ((page as string) === 'tahlil') {
-    return <ReaderView {...readerProps} book={tahlilData} pageId="tahlil" />;
-  }
-
-  if ((page as string) === 'talqin') {
-    return <ReaderView {...readerProps} book={talqinData} pageId="talqin" />;
-  }
-
-  if ((page as string) === 'doa-jenazah-anak') {
-    return <ReaderView {...readerProps} book={doaJenazahAnak} pageId={page} />;
-  }
-
-  if ((page as string) === 'about') {
-    return <AboutPage darkMode={prefs.darkMode} onBack={handleBack} />;
-  }
-
-  // 3. TAMPILKAN DASHBOARD UTAMA
   return (
-    <Dashboard
-      onNavigate={handleNavigate}
-      darkMode={prefs.darkMode}
-      onToggleDark={toggleDarkMode}
-    />
+    <>
+      <Dashboard onNavigate={handleNavigate} darkMode={prefs.darkMode} onToggleDark={toggleDarkMode} />
+      <FloatingNavbar active={page} onNavigate={handleNavigate} darkMode={prefs.darkMode} />
+    </>
   );
 }
